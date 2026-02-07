@@ -475,10 +475,10 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para de
 
 ## 📧 Contato
 
-**Desenvolvedor:** [Seu Nome]
-**Email:** seu.email@exemplo.com
-**GitHub:** [@seu-usuario](https://github.com/seu-usuario)
-**LinkedIn:** [seu-perfil](https://linkedin.com/in/seu-perfil)
+**Desenvolvedor:** Raphael Mendes
+**Email:** python.dev.raphael@gmail.com
+**GitHub:** pythondevraphael-cmyk
+**LinkedIn:** https://www.linkedin.com/in/raphael-mendes-9ba7613a5/
 
 ---
 
