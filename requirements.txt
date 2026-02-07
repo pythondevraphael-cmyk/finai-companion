@@ -1,0 +1,7 @@
+# FinAI Companion - Dependências do Projeto
+
+streamlit>=1.29.0
+google-generativeai>=0.8.0
+pandas>=2.1.4
+numpy>=1.26.2
+python-dotenv>=1.0.0
