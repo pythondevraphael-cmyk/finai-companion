@@ -1,0 +1,61 @@
+/* Importando a Orbitron para tudo */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+
+.stApp {
+    background: radial-gradient(ellipse at bottom, #0d1117 0%, #010409 100%);
+    color: #00f2ff;
+    font-family: 'Orbitron', sans-serif !important;
+}
+
+/* Título com Glow Neon */
+.main-header {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 3.8rem !important;
+    text-align: center;
+    background: linear-gradient(90deg, #00f2ff, #00ff88);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 20px rgba(0, 242, 255, 0.6));
+    margin-bottom: 0px;
+}
+
+/* Centralizando e dando Neon nos Cards (Selic, Ibovespa, etc) */
+[data-testid="stMetric"] {
+    background: rgba(0, 0, 0, 0.6) !important;
+    border: 2px solid #00f2ff !important; /* Contorno Neon */
+    border-radius: 15px !important;
+    padding: 20px !important;
+    box-shadow: 0 0 15px rgba(0, 242, 255, 0.3), inset 0 0 10px rgba(0, 242, 255, 0.1) !important;
+    text-align: center !important; /* Centraliza o texto */
+}
+
+/* Forçar centralização dos labels e valores dentro da métrica */
+[data-testid="stMetricLabel"], [data-testid="stMetricValue"] {
+    display: flex !important;
+    justify-content: center !important;
+    width: 100% !important;
+}
+
+/* Contorno Neon na Calculadora (Inputs da Sidebar) */
+div[data-testid="stSidebar"] .stNumberInput, 
+div[data-testid="stSidebar"] .stSelectbox {
+    border: 1px solid #00f2ff66 !important;
+    border-radius: 8px !important;
+    box-shadow: 0 0 8px rgba(0, 242, 255, 0.2) !important;
+    margin-bottom: 15px !important;
+}
+
+/* Estilizando o botão da calculadora para parecer um painel tech */
+div[data-testid="stSidebar"] button {
+    background-color: transparent !important;
+    border: 1px solid #00ff88 !important;
+    color: #00ff88 !important;
+    width: 100% !important;
+    font-weight: bold !important;
+    transition: 0.3s !important;
+}
+
+div[data-testid="stSidebar"] button:hover {
+    background-color: #00ff8822 !important;
+    box-shadow: 0 0 20px #00ff88 !important;
+}

@@ -1,111 +1,134 @@
 import streamlit as st
-from datetime import datetime
+import os
+import plotly.graph_objects as go
+from fpdf import FPDF
 from ai_core import FinAIEngine
 from data_handler import FinancialCalculator
 
-# Configuração da página
-st.set_page_config(page_title="FinAI Companion", page_icon="💰", layout="wide")
+# Configuração de Página
+st.set_page_config(page_title="FinAI CORE v2.3 Premium", page_icon="🤖", layout="wide")
 
-@st.cache_resource
-def init_ai_engine(): return FinAIEngine()
-@st.cache_resource
-def init_calculator(): return FinancialCalculator()
-
-# CSS Ajustado para Contraste Total
+# --- CSS PREMIUM INTEGRADO ---
 st.markdown("""
 <style>
-    .main-header { font-size: 2.5rem; color: #1f77b4; text-align: center; margin-bottom: 0px; }
-    .chat-message { padding: 1.5rem; border-radius: 12px; margin-bottom: 1rem; display: flex; flex-direction: column; }
-    .user-message { background-color: #e3f2fd; border-left: 5px solid #1f77b4; color: #0d47a1; }
-    .assistant-message { background-color: #262730; border-left: 5px solid #4caf50; color: #ffffff; }
-    .disclaimer { background-color: #fff3cd; padding: 1rem; border-radius: 5px; border-left: 4px solid #ffc107; margin-bottom: 20px; color: #856404; }
-    [data-testid="stMetricValue"] { font-size: 1.8rem; color: #1f77b4; }
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+    .stApp { background: radial-gradient(ellipse at bottom, #0d1117 0%, #010409 100%); color: #00f2ff; font-family: 'Orbitron', sans-serif !important; }
+    .main-header { font-size: 2.5rem !important; font-weight: 900; text-align: center; background: linear-gradient(90deg, #00f2ff, #00ff88); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; }
+    .robot-container { display: flex; justify-content: center; margin: 10px 0; }
+    .robot-img { width: 100px; filter: drop-shadow(0 0 10px #00f2ff); transition: all 0.5s ease; }
+    .robot-blink { animation: blink-green 0.8s ease-in-out; }
+    @keyframes blink-green {
+        0% { transform: scale(1); filter: drop-shadow(0 0 10px #00f2ff); }
+        50% { transform: scale(1.1); filter: drop-shadow(0 0 30px #00ff88); }
+        100% { transform: scale(1); filter: drop-shadow(0 0 10px #00f2ff); }
+    }
+    [data-testid="stMetric"] { background: rgba(0, 0, 0, 0.4) !important; border: 1px solid #00f2ff !important; border-radius: 10px !important; text-align: center !important; }
 </style>
 """, unsafe_allow_html=True)
 
-def main():
-    # Header
-    st.markdown('<h1 class="main-header">💰 FinAI Companion</h1>', unsafe_allow_html=True)
-    st.markdown('<p style="text-align: center; color: #666;">Seu coach financeiro digital: transformando números em decisões</p>', unsafe_allow_html=True)
+# --- FUNÇÃO EXPORTAR PDF (VERSÃO FINAL COMPATÍVEL) ---
+def export_pdf(messages):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", 'B', 16) # Helvetica é mais estável que Arial
+    pdf.cell(200, 10, txt="FinAI CORE - Relatorio de Consultoria", ln=True, align='C')
+    pdf.ln(10)
+    pdf.set_font("Helvetica", size=12)
     
-    # --- NOVO: SEÇÃO DE MÉTRICAS (Upgrade da Homepage) ---
-    m1, m2, m3, m4 = st.columns(4)
-    m1.metric("Selic", "10,75%", "-0,25%")
-    m2.metric("IPCA (12m)", "4,42%", "0,15%", delta_color="inverse")
-    m3.metric("CDI", "10,65%", "0,00%")
-    m4.metric("Ibovespa", "128k pts", "+1,2%", delta_color="normal")
+    for msg in messages:
+        role = "USUARIO" if msg["role"] == "user" else "FINAI"
+        content = msg["content"]
+        pdf.multi_cell(0, 10, txt=f"{role}: {content}")
+        pdf.ln(5)
     
-    # Disclaimer
-    st.markdown("""<div class="disclaimer"><strong>⚠️ Aviso:</strong> Informativo educacional. Não substitui consultoria profissional.</div>""", unsafe_allow_html=True)
-    
-    ai_engine = init_ai_engine()
-    calculator = init_calculator()
-    
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
-        st.session_state.conversation_context = []
+    # O PULO DO GATO: Converter bytearray para bytes
+    pdf_output = pdf.output(dest='S')
+    return bytes(pdf_output)
 
-    # --- Sidebar com Calculadoras ---
+def render_neon_chart():
+    meses = ['Set', 'Out', 'Nov', 'Dez', 'Jan', 'Fev']
+    valores = [10.50, 10.75, 11.25, 11.75, 11.75, 11.25]
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=meses, y=valores, mode='lines+markers', line=dict(color='#00f2ff', width=3), marker=dict(size=8, color='#00ff88')))
+    fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=dict(color='#00f2ff', family='Orbitron'), height=200, margin=dict(l=20, r=20, t=10, b=10), showlegend=False)
+    st.plotly_chart(fig, use_container_width=True)
+
+def main():
+    # Inicializa estados
+    if 'blink' not in st.session_state: st.session_state.blink = False
+    if 'last_result' not in st.session_state: st.session_state.last_result = None
+    if "messages" not in st.session_state: st.session_state.messages = []
+
+    st.markdown('<h1 class="main-header">FINAI CORE v2.3</h1>', unsafe_allow_html=True)
+    
+    # Robô Premium com tamanho fixo
+    blink_class = "robot-blink" if st.session_state.blink else ""
+    robot_url = "https://cdn-icons-png.flaticon.com/512/4712/4712139.png"
+    st.markdown(f'<div class="robot-container"><img src="{robot_url}" class="robot-img {blink_class}"></div>', unsafe_allow_html=True)
+    st.session_state.blink = False
+
+    # Métricas
+    m1, m2, m3, m4 = st.columns(4)
+    m1.metric("SELIC (META)", "11,25%", "+0,50%")
+    m2.metric("IPCA (12M)", "3,95%", "-0,10%", delta_color="inverse")
+    m3.metric("CDI (HOJE)", "11,15%", "0,00%")
+    m4.metric("IBOVESPA", "134.500", "+1,15%")
+    
+    render_neon_chart()
+    st.markdown("---")
+
+    ai_engine = FinAIEngine()
+    calculator = FinancialCalculator()
+
     with st.sidebar:
-        st.header("📊 Ferramentas")
-        calc = st.selectbox("Calculadora:", ["Juros Compostos", "Financiamento"])
-        
-        calc_context = ""
+        st.markdown("<h3 style='color:#00f2ff;'>PAINEL DE CONTROLE</h3>", unsafe_allow_html=True)
+        calc = st.selectbox("Escolha o Módulo:", ["Juros Compostos", "Financiamento"])
         
         if calc == "Juros Compostos":
-            p = st.number_input("Início (R$)", value=1000.0)
+            p = st.number_input("Capital Inicial (R$)", value=1000.0)
             t = st.number_input("Taxa Anual (%)", value=10.0)
             a = st.number_input("Anos", value=5)
-            calc_context = f"[Dados atuais na calculadora: Valor Inicial R$ {p}, Taxa {t}% ao ano, por {a} anos]"
-            
-            if st.button("Calcular Agora"):
+            if st.button("CALCULAR"):
                 res = calculator.juros_compostos(p, t/100, a)
-                st.success(f"Total: R$ {res:,.2f}")
-        
+                st.session_state.last_result = f"PROJECAO JUROS: R$ {res:,.2f}"
+                st.session_state.blink = True 
+                st.rerun()
+
         elif calc == "Financiamento":
-            v = st.number_input("Valor Imóvel (R$)", value=300000.0)
-            tm = st.number_input("Taxa Mensal (%)", value=0.8)
-            ms = st.number_input("Meses", value=360)
-            calc_context = f"[Dados de Financiamento: Valor R$ {v}, Taxa {tm}%/mês, Prazo {ms} meses]"
-            
-            if st.button("Calcular Parcela"):
-                parc = calculator.calcular_financiamento(v, tm/100, ms)
-                st.success(f"Parcela: R$ {parc:,.2f}")
+            v = st.number_input("Valor Total (R$)", value=200000.0)
+            taxa_m = st.number_input("Taxa Mensal (%)", value=0.9)
+            meses = st.number_input("Qtd Meses", value=120)
+            if st.button("CALCULAR PARCELA"):
+                res = calculator.calcular_financiamento(v, taxa_m/100, meses)
+                st.session_state.last_result = f"PARCELA MENSAL: R$ {res:,.2f}"
+                st.session_state.blink = True
+                st.rerun()
+
+        if st.session_state.last_result:
+            st.success(st.session_state.last_result)
 
         st.divider()
-        if st.button("🗑️ Limpar Conversa"):
+        if st.session_state.messages:
+            pdf_data = export_pdf(st.session_state.messages)
+            st.download_button("📥 BAIXAR RELATORIO PDF", data=pdf_data, file_name="consultoria_finai.pdf", mime="application/pdf")
+        
+        if st.button("REINICIAR TUDO"):
             st.session_state.messages = []
-            st.session_state.conversation_context = []
+            st.session_state.last_result = None
             st.rerun()
 
-    # --- Função de Envio ---
-    def process_chat(text):
-        prompt_com_dados = f"{calc_context}\n\nPergunta do usuário: {text}"
-        st.session_state.messages.append({"role": "user", "content": text})
-        with st.spinner("FinAI analisando..."):
-            response = ai_engine.generate_response(prompt_com_dados, st.session_state.conversation_context)
-            
-        st.session_state.messages.append({"role": "assistant", "content": response})
-        st.session_state.conversation_context.append({"user": text, "assistant": response})
-        st.rerun()
-
-    # Exibir Histórico
+    # Chat
     for msg in st.session_state.messages:
-        div_class = "user-message" if msg["role"] == "user" else "assistant-message"
-        st.markdown(f"""<div class="chat-message {div_class}"><strong>{"🧑 Você" if msg["role"] == "user" else "🤖 FinAI"}</strong>{msg["content"]}</div>""", unsafe_allow_html=True)
+        with st.chat_message(msg["role"]):
+            st.write(msg["content"])
 
-    # Input manual
-    if prompt := st.chat_input("Diga algo..."):
-        process_chat(prompt)
-
-    # Sugestões Clicáveis
-    if not st.session_state.messages:
-        st.markdown("---")
-        st.subheader("💡 Experimente perguntar:")
-        col1, col2, col3 = st.columns(3)
-        if col1.button("💰 Juntar R$50k em 3 anos"): process_chat("Como posso juntar R$50.000 em 3 anos?")
-        if col2.button("📊 CDB ou Tesouro?"): process_chat("Qual a diferença entre CDB e Tesouro Direto?")
-        if col3.button("🏠 Entrada de Casa"): process_chat("Quanto dar de entrada em um imóvel?")
+    if prompt := st.chat_input("Consulte o FinAI..."):
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        with st.spinner("PROCESSANDO..."):
+            full_prompt = f"(Contexto: {st.session_state.last_result}) {prompt}" if st.session_state.last_result else prompt
+            response = ai_engine.generate_response(full_prompt, st.session_state.messages)
+        st.session_state.messages.append({"role": "assistant", "content": response})
+        st.rerun()
 
 if __name__ == "__main__":
     main()
