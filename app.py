@@ -26,22 +26,25 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# --- FUNÇÃO EXPORTAR PDF (VERSÃO FINAL COMPATÍVEL) ---
+# --- FUNÇÃO EXPORTAR PDF (VERSÃO BLINDADA CONTRA UNICODE) ---
 def export_pdf(messages):
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_font("Helvetica", 'B', 16) # Helvetica é mais estável que Arial
+    pdf.set_font("Helvetica", 'B', 16) 
     pdf.cell(200, 10, txt="FinAI CORE - Relatorio de Consultoria", ln=True, align='C')
     pdf.ln(10)
     pdf.set_font("Helvetica", size=12)
     
     for msg in messages:
         role = "USUARIO" if msg["role"] == "user" else "FINAI"
-        content = msg["content"]
+        
+        # Limpa caracteres que a fonte Helvetica não suporta (como o traço longo do Gemini)
+        content = msg["content"].encode('latin-1', 'ignore').decode('latin-1')
+        
         pdf.multi_cell(0, 10, txt=f"{role}: {content}")
         pdf.ln(5)
     
-    # O PULO DO GATO: Converter bytearray para bytes
+    # Converte bytearray para bytes para compatibilidade com Streamlit
     pdf_output = pdf.output(dest='S')
     return bytes(pdf_output)
 
@@ -54,20 +57,17 @@ def render_neon_chart():
     st.plotly_chart(fig, use_container_width=True)
 
 def main():
-    # Inicializa estados
     if 'blink' not in st.session_state: st.session_state.blink = False
     if 'last_result' not in st.session_state: st.session_state.last_result = None
     if "messages" not in st.session_state: st.session_state.messages = []
 
     st.markdown('<h1 class="main-header">FINAI CORE v2.3</h1>', unsafe_allow_html=True)
     
-    # Robô Premium com tamanho fixo
     blink_class = "robot-blink" if st.session_state.blink else ""
     robot_url = "https://cdn-icons-png.flaticon.com/512/4712/4712139.png"
     st.markdown(f'<div class="robot-container"><img src="{robot_url}" class="robot-img {blink_class}"></div>', unsafe_allow_html=True)
     st.session_state.blink = False
 
-    # Métricas
     m1, m2, m3, m4 = st.columns(4)
     m1.metric("SELIC (META)", "11,25%", "+0,50%")
     m2.metric("IPCA (12M)", "3,95%", "-0,10%", delta_color="inverse")
@@ -109,6 +109,7 @@ def main():
 
         st.divider()
         if st.session_state.messages:
+            # Geração segura do PDF
             pdf_data = export_pdf(st.session_state.messages)
             st.download_button("📥 BAIXAR RELATORIO PDF", data=pdf_data, file_name="consultoria_finai.pdf", mime="application/pdf")
         
@@ -117,7 +118,6 @@ def main():
             st.session_state.last_result = None
             st.rerun()
 
-    # Chat
     for msg in st.session_state.messages:
         with st.chat_message(msg["role"]):
             st.write(msg["content"])
